@@ -18,7 +18,7 @@ conductor.on('error', function(err) {
 });
 
 conductor.on('end', function() {
-    conductor.handler.debug();
+    console.log('end triggered');
 });
 
 conductor.start();
