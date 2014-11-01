@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: builder.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: builder.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module patternlab2phpcr
+ * @author Moritz Spindelhirn [m.spindelhirn@cashiers-check.de]
+ * @namespace Builder
+ */
+(function(module) {
+    'use strict';
+
+    var Field = require('./parser').Field,
+        Include = require('./parser').Include,
+        Q = require('q');
+
+    /**
+     * Abstract class for a handler module.
+     * NodeStorage modules process the storage. A module can for example scaffold CR class stubs.
+     *
+     * @memberOf Builder
+     * @namespace Builder.BuilderModule
+     * @constructor
+     */
+    function BuilderModule() {}
+
+    /**
+     * Process the {@link Builder.NodeStorage node storage}.
+     *
+     * @function process
+     * @memberOf Builder.BuilderModule
+     *
+     * @param {Object.&lt;string, Builder.CrNode>} storage
+     * @param {function} fn callback function
+     */
+    BuilderModule.prototype.process = function(storage, fn) {
+        var qAll = [];
+        for(var prop in storage) {
+            if(storage.hasOwnProperty(prop)) {
+                var node = storage[prop];
+                qAll.push(this.createNode(node, fn));
+            }
+        }
+
+        var promise = Q.all(qAll);
+        Q.allSettled(promise).then(function(outputs) {
+            fn(null, outputs);
+        }, function(err) {
+            fn(err);
+        });
+    };
+
+    /**
+     * Create a node.
+     *
+     * @function createNode
+     * @memberOf Builder.BuilderModule
+     * @abstract
+     *
+     * @param {Builder.CrNode} crNode node to create
+     *
+     * @returns {Q.Promise}
+     */
+    BuilderModule.prototype.createNode = function(crNode) {
+        throw new Error('createNode not implemented.');
+    };
+
+    /**
+     * Represents a node
+     *
+     * @memberOf Builder
+     * @namespace Builder.CrNode
+     * @constructor
+     * @param {string} id
+     */
+    function CrNode(id) {
+
+        /**
+         * ID of the node.
+         *
+         * @name id
+         * @memberOf Builder.CrNode
+         *
+         * @type {string}
+         */
+        this.id = id;
+
+        /**
+         * @name fields
+         * @memberOf Builder.CrNode
+         *
+         * @type {Object.&lt;string, Parser.Field>}
+         */
+        this.fields = {};
+
+        /**
+         * @name relations
+         * @memberOf Builder.CrNode
+         *
+         * @type {Parser.Include[]}
+         */
+        this.relations = [];
+    }
+
+    /**
+     * Add a field to the node.
+     *
+     * @throws {TypeError} Throws an {@link TypeError} if the given field is not an instance of {@link Field}.
+     * @throws {Error} Throws an {@link Error} when there is already a field with the same name attached to the node.
+     *
+     * @function addField
+     * @memberOf Builder.CrNode
+     *
+     * @param {Field} field
+     */
+    CrNode.prototype.addField = function(field) {
+        if(!(field instanceof Field)) {
+            throw new TypeError('Fields must be instances of Field.');
+        }
+
+        if(this.fields.hasOwnProperty(field.name)) {
+            throw new Error('Field with the same name is already attached.');
+        }
+
+        this.fields[field.name] = field;
+    };
+
+    /**
+     * Add an include as a relation to the node.
+     *
+     * @param {Parser.Include} include
+     */
+    CrNode.prototype.addRelation = function(include) {
+        if(!(include instanceof Include)) {
+            throw new TypeError('Relation object must be instances of Include.');
+        }
+
+        this.relations.push(include);
+    };
+
+
+    /**
+     * NodeStorage class for structures.
+     *
+     * @memberOf Builder
+     * @namespace Builder.NodeStorage
+     * @constructor
+     */
+    function NodeStorage() {
+
+        /**
+         * Map storage for nodes.
+         *
+         * @name storage
+         * @memberOf Builder.NodeStorage
+         *
+         * @type {Object.&lt;string, Builder.CrNode>}
+         */
+        this.storage = {};
+    }
+
+    /**
+     * Initializes a new structure.
+     * Before you can call {@link Builder.NodeStorage.addField addField} or {@link Builder.NodeStorage.addRelation addRelation} with
+     * a {@link Builder.CrNode node} it must be initialized.
+     *
+     * @function addNode
+     * @memberOf Builder.NodeStorage
+     *
+     * @param {Builder.CrNode} node Node to be initialized
+     */
+    NodeStorage.prototype.addNode = function(node) {
+        this.storage[node.id] = node;
+    };
+
+    /**
+     * Return true if the given node id is already known to the storage.
+     *
+     * @function hasNode
+     * @memberOf Builder.NodeStorage
+     *
+     * @param {string} id
+     *
+     * @returns {boolean}
+     */
+    NodeStorage.prototype.hasNode = function(id) {
+        return this.storage.hasOwnProperty(id);
+    };
+
+    /**
+     * Get a node from the storage.
+     * If the node is not in the storage return null instead.
+     *
+     * @function getNodeById
+     * @memberOf Builder.NodeStorage
+     *
+     * @param {string} id
+     *
+     * @returns {Builder.CrNode}
+     */
+    NodeStorage.prototype.getNodeById = function(id) {
+        if(this.storage.hasOwnProperty(id)) {
+            return this.storage[id];
+        } else {
+            return null;
+        }
+    };
+
+    /**
+     * Add a field to the given node.
+     *
+     * @throws {TypeError} Throws an {@link TypeError} if the given field is not an instance of {@link Field}.
+     * @throws {Error} Throws an {@link Error} if the given id is not found in the storage.
+     * @throws {Error} Throws an {@link Error} when there is already a field with the same name attached to the node.
+     *
+     * @function addField
+     * @memberOf Builder.NodeStorage
+     *
+     * @param {string} id ID of the node to add the field to
+     * @param {Parser.Field} field The field to add
+     */
+    NodeStorage.prototype.addField = function(id, field) {
+        var node = this.getNodeById(id);
+        if(!node) {
+            throw new Error('Node id `' + id + '` not found.');
+        }
+
+        node.addField(field);
+    };
+
+    /**
+     * Creates a relation between two structures.
+     * The source structure must be initialized.
+     *
+     * @function addRelation
+     * @memberOf Builder.NodeStorage
+     *
+     * @param {string} sourceId
+     * @param {Parser.Parser.Include} relationInclude
+     */
+    NodeStorage.prototype.addRelation = function(sourceId, relationInclude) {
+        var node = this.getNodeById(sourceId);
+        if(!node) {
+            throw new Error('Node id `' + sourceId + '` not found.');
+        }
+
+        node.addRelation(relationInclude);
+    };
+
+    // Propagate NodeStorage and CrNode class
+    module.exports = {
+        NodeStorage     : NodeStorage,
+        CrNode          : CrNode,
+        BuilderModule   : BuilderModule
+    };
+})(module);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Builder.BuilderModule.html">BuilderModule</a></li><li><a href="Builder.CrNode.html">CrNode</a></li><li><a href="Builder.NodeStorage.html">NodeStorage</a></li><li><a href="BuilderModules.PhpDataobjectScaffolding.BuilderModules.PhpDataobjectScaffolding.html">PhpDataobjectScaffolding</a></li><li><a href="Conductor.Conductor.html">Conductor</a></li><li><a href="Parser.Field.html">Field</a></li><li><a href="Parser.Include.html">Include</a></li><li><a href="Parser.InfoBlock.html">InfoBlock</a></li><li><a href="Parser.Parser.html">Parser</a></li></ul><h3>Namespaces</h3><ul><li><a href="Builder.html">Builder</a></li><li><a href="BuilderModules.PhpDataobjectScaffolding.html">PhpDataobjectScaffolding</a></li><li><a href="Conductor.html">Conductor</a></li><li><a href="Conductor.defaultOptions.html">defaultOptions</a></li><li><a href="Parser.html">Parser</a></li><li><a href="Parser.parserFieldDefaultOptions.html">parserFieldDefaultOptions</a></li><li><a href="Parser.parserInfoDefaultOptions.html">parserInfoDefaultOptions</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha10</a> on Sat Nov 01 2014 23:36:48 GMT+0100 (CET)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
