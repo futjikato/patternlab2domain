@@ -1,0 +1,19 @@
+'{{module.options.neos.site}}:{{node.id}}':
+  superTypes: [{{node.info.options.neos.parentType}}]
+  childNodes:
+{{#node.relations}}
+    '{{name}}':
+      type: '{{module.options.neos.site}}:{{name}}'
+{{/node.relations}}
+  ui:
+    label: '{{node.id}}'
+    group: 'general'
+  properties:
+{{#node.fields}}
+    '{{name}}':
+      type: string
+      defaultValue: ''
+      ui:
+        label: '{{name}}'
+        inlineEditable: TRUE
+{{/node.fields}}

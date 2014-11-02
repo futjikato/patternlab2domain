@@ -1,0 +1,16 @@
+##
+# "{{node.id}}" element
+#
+prototype({{module.options.neos.site}}:{{node.id}}) < prototype({{node.info.options.neos.parentType}}) {
+  templatePath = 'resource://Futjikato.Home/Private/Templates/NodeTypes/{{node.id}}.html'
+
+  textRenderer = TYPO3.Neos.NodeTypes:Text
+
+  {{#node.relations}}
+  {{name}} = ${q(node).children('{{name}}').get(0)}
+  {{/node.relations}}
+
+  {{#node.fields}}
+  {{name}} = ${q(node).property('{{name}}')}
+  {{/node.fields}}
+}
