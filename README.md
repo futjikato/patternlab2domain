@@ -35,7 +35,7 @@ Such information can be provided in every template by adding an cr:node comment.
 <hr />
 ```
 
-This example will show indicate that this node should not be handled as an element and will simply be
+This example will indicate that the node should not be handled as an element and will simply be
 included in the parent node template.
 
 Develop
