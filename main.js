@@ -7,7 +7,7 @@
 
 var argv = require('optimist').argv,
     Conductor = require('./lib/conductor').Conductor,
-    PhpDataobjectScaffolding = require('./lib/modules/phpDataobjectScaffolding/module').PhpDataobjectScaffolding;
+    Writer = require('./lib/writer').Writer;
 
 var templateDir = argv.tplBaseDir,
     templateFile = argv.tplFile,
@@ -20,23 +20,16 @@ var conductor = new Conductor({
 });
 
 conductor.on('error', function(err) {
-    console.error(err);
+    console.error('Error', err);
 });
 
-var phpDoModule = new PhpDataobjectScaffolding();
 conductor.on('end', function() {
-    phpDoModule.process(conductor.handler.storage, function(err, outputs) {
-        if(err) {
-            console.error(err);
-            return;
-        }
-
-        outputs.forEach(function(out) {
-            if(out.state === 'fulfilled') {
-                console.log(out.value);
-            }
-        });
+    console.log('start model writing');
+    var writer = new Writer();
+    writer.write(conductor.handler.storage, function() {
+        console.log('model written');
     });
 });
 
+console.log('start parsing project');
 conductor.start();
