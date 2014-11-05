@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: CrNode</title>
+    <title>JSDoc: Class: Writer</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: CrNode</h1>
+    <h1 class="page-title">Class: Writer</h1>
 
     
 
@@ -29,9 +29,9 @@
 <header>
     
         <h2>
-            <span class="ancestors"><a href="Builder.html">Builder</a>.</span>
+            <span class="ancestors"><a href="Writer.html">Writer</a>.</span>
         
-        CrNode
+        Writer
         </h2>
         
     
@@ -43,7 +43,7 @@
         
 <dt>
     
-        <h4 class="name" id="CrNode"><span class="type-signature"></span>new CrNode<span class="signature">(id)</span><span class="type-signature"></span></h4>
+        <h4 class="name" id="Writer"><span class="type-signature"></span>new Writer<span class="signature">(options)</span><span class="type-signature"></span></h4>
 
         
     
@@ -52,7 +52,7 @@
 
     
     <div class="description">
-        Represents a node
+        Writer class for creating the actual model json file.
     </div>
     
 
@@ -88,13 +88,13 @@
 
         <tr>
             
-                <td class="name"><code>id</code></td>
+                <td class="name"><code>options</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type">Object</span>
 
 
             
@@ -142,7 +142,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="builder.js.html">builder.js</a>, <a href="builder.js.html#line13">line 13</a>
+        <a href="writer.js.html">writer.js</a>, <a href="writer.js.html#line26">line 26</a>
     </li></ul></dd>
     
 
@@ -188,83 +188,14 @@
         <dl>
             
 <dt>
-    <h4 class="name" id="fields"><span class="type-signature">(static) </span>fields<span class="type-signature"> :Array.&lt;<a href="Parser.Field.html">Parser.Field</a>></span></h4>
-
-    
-</dt>
-<dd>
-    
-
-    
-        <h5>Type:</h5>
-        <ul>
-            <li>
-                
-<span class="param-type">Array.&lt;<a href="Parser.Field.html">Parser.Field</a>></span>
-
-
-            </li>
-        </ul>
-    
-
-    
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="builder.js.html">builder.js</a>, <a href="builder.js.html#line41">line 41</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-    
-
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="id"><span class="type-signature">(static) </span>id<span class="type-signature"> :string</span></h4>
+    <h4 class="name" id="model"><span class="type-signature">(static) </span>model<span class="type-signature"> :Object</span></h4>
 
     
 </dt>
 <dd>
     
     <div class="description">
-        ID of the node.
+        Domain model
     </div>
     
 
@@ -273,7 +204,7 @@
         <ul>
             <li>
                 
-<span class="param-type">string</span>
+<span class="param-type">Object</span>
 
 
             </li>
@@ -310,7 +241,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="builder.js.html">builder.js</a>, <a href="builder.js.html#line23">line 23</a>
+        <a href="writer.js.html">writer.js</a>, <a href="writer.js.html#line47">line 47</a>
     </li></ul></dd>
     
 
@@ -330,14 +261,14 @@
         
             
 <dt>
-    <h4 class="name" id="info"><span class="type-signature">(static) </span>info<span class="type-signature"> :Parser.InfoBlock</span></h4>
+    <h4 class="name" id="options"><span class="type-signature">(static) </span>options<span class="type-signature"> :Object</span></h4>
 
     
 </dt>
 <dd>
     
     <div class="description">
-        Additional information for this node
+        Writer options
     </div>
     
 
@@ -346,7 +277,7 @@
         <ul>
             <li>
                 
-<span class="param-type">Parser.InfoBlock</span>
+<span class="param-type">Object</span>
 
 
             </li>
@@ -383,145 +314,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="builder.js.html">builder.js</a>, <a href="builder.js.html#line57">line 57</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-    
-
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="relations"><span class="type-signature">(static) </span>relations<span class="type-signature"> :Array.&lt;<a href="Parser.Include.html">Parser.Include</a>></span></h4>
-
-    
-</dt>
-<dd>
-    
-
-    
-        <h5>Type:</h5>
-        <ul>
-            <li>
-                
-<span class="param-type">Array.&lt;<a href="Parser.Include.html">Parser.Include</a>></span>
-
-
-            </li>
-        </ul>
-    
-
-    
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="builder.js.html">builder.js</a>, <a href="builder.js.html#line49">line 49</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-    
-
-    
-</dd>
-
-        
-            
-<dt>
-    <h4 class="name" id="templateFile"><span class="type-signature">(static) </span>templateFile<span class="type-signature"> :string</span></h4>
-
-    
-</dt>
-<dd>
-    
-
-    
-        <h5>Type:</h5>
-        <ul>
-            <li>
-                
-<span class="param-type">string</span>
-
-
-            </li>
-        </ul>
-    
-
-    
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="builder.js.html">builder.js</a>, <a href="builder.js.html#line33">line 33</a>
+        <a href="writer.js.html">writer.js</a>, <a href="writer.js.html#line37">line 37</a>
     </li></ul></dd>
     
 
@@ -548,7 +341,7 @@
             
 <dt>
     
-        <h4 class="name" id="addField"><span class="type-signature">(static) </span>addField<span class="signature">(field)</span><span class="type-signature"></span></h4>
+        <h4 class="name" id="write"><span class="type-signature">(static) </span>write<span class="signature">(storage, fn)</span><span class="type-signature"></span></h4>
 
         
     
@@ -557,7 +350,8 @@
 
     
     <div class="description">
-        Add a field to the node.
+        Convert the node storage to the domain model.
+Then write the model to a file.
     </div>
     
 
@@ -593,13 +387,36 @@
 
         <tr>
             
-                <td class="name"><code>field</code></td>
+                <td class="name"><code>storage</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Field</span>
+<span class="param-type"><a href="Builder.NodeStorage.html">Builder.NodeStorage</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>fn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
 
 
             
@@ -647,7 +464,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="builder.js.html">builder.js</a>, <a href="builder.js.html#line68">line 68</a>
+        <a href="writer.js.html">writer.js</a>, <a href="writer.js.html#line76">line 76</a>
     </li></ul></dd>
     
 
@@ -668,58 +485,6 @@
     
 
     
-    <h5>Throws:</h5>
-    <ul>
-            <li>
-
-<dl>
-    <dt>
-        <div class="param-desc">
-        Throws an TypeError if the given field is not an instance of Field.
-        </div>
-    </dt>
-    <dt>
-        <dl>
-            <dt>
-                Type
-            </dt>
-            <dd>
-                
-<span class="param-type">TypeError</span>
-
-
-            </dd>
-        </dl>
-    </dt>
-</dl>
-
-</li>
-        
-            <li>
-
-<dl>
-    <dt>
-        <div class="param-desc">
-        Throws an Error when there is already a field with the same name attached to the node.
-        </div>
-    </dt>
-    <dt>
-        <dl>
-            <dt>
-                Type
-            </dt>
-            <dd>
-                
-<span class="param-type">Error</span>
-
-
-            </dd>
-        </dl>
-    </dt>
-</dl>
-
-</li>
-        </ul>
 
     
 

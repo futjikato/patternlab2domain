@@ -96,19 +96,6 @@
         this.options = extend(true, {}, parserFieldDefaultOptions, options);
     }
 
-    /**
-     * Returns true if the field was used as a iterable object.
-     * e.g. in a for-loop.
-     *
-     * @function isIterable
-     * @memberOf Parser.Field
-     *
-     * @returns {boolean}
-     */
-    Field.prototype.isIterable = function() {
-        return this.options.iterable;
-    };
-
 
     /**
      * Mustache includes are translated to relations between nodes.
@@ -119,7 +106,7 @@
      *
      * @constructor
      * @param {string} name
-     * @param {InfoBlock} info
+     * @param {{}} info
      */
     function Include(name, info) {
 
@@ -139,65 +126,9 @@
          * @name info
          * @memberOf Parser.Include
          *
-         * @type {Parser.InfoBlock}
+         * @type {{}}
          */
-        this.info = info;
-    }
-
-    /**
-     * Default options for an information block
-     *
-     * @memberOf Parser
-     * @namespace Parser.parserInfoDefaultOptions
-     *
-     * @type {{}}
-     */
-    var parserInfoDefaultOptions = {
-
-        /**
-         * Variable name.
-         * used for information blocks with type 'import' to specify the relation name in the CR context.
-         *
-         * @memberOf Parser.parserInfoDefaultOptions
-         *
-         * @type {string}
-         */
-        name: ''
-    };
-
-    /**
-     * Information extracted from a comment block in the parsing template.
-     * This information can be used on following tags to enrich them with some more data.
-     *
-     * @memberOf Parser
-     * @namespace Parser.InfoBlock
-     *
-     * @constructor
-     * @param {string} type
-     * @param {{}} options
-     */
-    function InfoBlock(type, options) {
-        /**
-         * Type of the information.
-         * Can be one of the following strings:
-         * 'import'
-         *
-         * @name type
-         * @memberOf Parser.InfoBlock
-         *
-         * @type {string}
-         */
-        this.type = type;
-
-        /**
-         * Options contain the real information provided by this block.
-         *
-         * @name options
-         * @memberOf Parser.InfoBlock
-         *
-         * @type {Parser.parserInfoDefaultOptions}
-         */
-        this.options = extend(true, {}, parserInfoDefaultOptions, options);
+        this.options = info;
     }
 
     /**
@@ -207,6 +138,7 @@
      * @fires Parser#include
      * @fires Parser#field
      * @fires Parser#end
+     * @fires Parser#nodeinfo
      *
      * @memberOf Parser
      * @namespace Parser.Parser
@@ -226,30 +158,6 @@
          * @type {string}
          */
         this.file = file;
-
-        /**
-         * Parse an comment block and return an info block if it matches teh definition of one
-         *
-         * @function readCrComment
-         * @memberOf Parser.Parser
-         * @private
-         *
-         * @param {string} value
-         *
-         * @returns {Parser.InfoBlock}
-         */
-        this.readCrComment = function(value) {
-            switch(true) {
-                case (value.substr(0, 'cr:import'.length) === 'cr:import'):
-                    var opts = {
-                        name: value.substr('cr:import'.length + 1)
-                    };
-                    return new InfoBlock('import', opts);
-                    break;
-            }
-
-            return null;
-        };
     }
     util.inherits(Parser, events.EventEmitter);
 
@@ -279,12 +187,19 @@
 
                         /**
                          * Handle comments
-                         * Comments may contain additional information for imports
+                         * Comments may contain additional information for imports or the base node
                          */
                         case '!':
-                            var infoBlock = $this.readCrComment(b[1]);
-                            if(infoBlock) {
-                                lastInfo = infoBlock;
+                            var value = b[1];
+                            switch(true) {
+                                case (value.substr(0, 'cr:element'.length) === 'cr:element'):
+                                    lastInfo = JSON.parse(value.substr('cr:element'.length + 1));
+                                    break;
+
+                                case (value.substr(0, 'cr:node'.length) === 'cr:node'):
+                                    var opts = JSON.parse(value.substr('cr:node'.length + 1));
+                                    $this.emit('nodeinfo', opts);
+                                    break;
                             }
                             break;
 
@@ -294,9 +209,9 @@
                         case '>':
                             // provide basic fallback
                             if(lastInfo === null) {
-                                lastInfo = new InfoBlock('import', {
+                                lastInfo = {
                                     name: b[1]
-                                });
+                                };
                             }
                             $this.emit('include', new Include(b[1], lastInfo));
                             lastInfo = null;
@@ -306,11 +221,26 @@
                          * Handle for-loops
                          */
                         case '#':
-                            var field = new Field(b[1], {
+                            if(lastInfo === null) {
+                                lastInfo = {};
+                            }
+                            var defaultOpts = {
                                 iterable: true
-                            });
+                            };
+                            var iteraField = new Field(b[1], extend(defaultOpts, lastInfo));
+                            $this.emit('field', iteraField);
+                            lastInfo = null;
+                            break;
+
+                        /**
+                         * Handle normal variable fields
+                         */
+                        case 'name':
+                            if(lastInfo === null) {
+                                lastInfo =  {};
+                            }
+                            var field = new Field(b[1], extend({}, lastInfo));
                             $this.emit('field', field);
-                            // reset info - must be directly above include !
                             lastInfo = null;
                             break;
 
@@ -337,13 +267,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Builder.BuilderModule.html">BuilderModule</a></li><li><a href="Builder.CrNode.html">CrNode</a></li><li><a href="Builder.NodeStorage.html">NodeStorage</a></li><li><a href="BuilderModules.PhpDataobjectScaffolding.BuilderModules.PhpDataobjectScaffolding.html">PhpDataobjectScaffolding</a></li><li><a href="Conductor.Conductor.html">Conductor</a></li><li><a href="Parser.Field.html">Field</a></li><li><a href="Parser.Include.html">Include</a></li><li><a href="Parser.InfoBlock.html">InfoBlock</a></li><li><a href="Parser.Parser.html">Parser</a></li></ul><h3>Namespaces</h3><ul><li><a href="Builder.html">Builder</a></li><li><a href="BuilderModules.PhpDataobjectScaffolding.html">PhpDataobjectScaffolding</a></li><li><a href="Conductor.html">Conductor</a></li><li><a href="Conductor.defaultOptions.html">defaultOptions</a></li><li><a href="Parser.html">Parser</a></li><li><a href="Parser.parserFieldDefaultOptions.html">parserFieldDefaultOptions</a></li><li><a href="Parser.parserInfoDefaultOptions.html">parserInfoDefaultOptions</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Builder.CrNode.html">CrNode</a></li><li><a href="Builder.NodeStorage.html">NodeStorage</a></li><li><a href="Conductor.Conductor.html">Conductor</a></li><li><a href="Parser.Field.html">Field</a></li><li><a href="Parser.Include.html">Include</a></li><li><a href="Parser.Parser.html">Parser</a></li><li><a href="Writer.Writer.html">Writer</a></li></ul><h3>Namespaces</h3><ul><li><a href="Builder.html">Builder</a></li><li><a href="Conductor.html">Conductor</a></li><li><a href="Conductor.defaultOptions.html">defaultOptions</a></li><li><a href="Parser.html">Parser</a></li><li><a href="Parser.parserFieldDefaultOptions.html">parserFieldDefaultOptions</a></li><li><a href="Writer.html">Writer</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha10</a> on Sat Nov 01 2014 23:36:48 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha10</a> on Wed Nov 05 2014 23:01:05 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>

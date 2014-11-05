@@ -35,17 +35,8 @@
     'use strict';
 
     var extend = require('extend'),
-        /**
-         * @type {Parser.Parser}
-         */
         Parser = require('./parser').Parser,
-        /**
-         * @type {Builder.NodeStorage}
-         */
         NodeStorage = require('./builder').NodeStorage,
-        /**
-         * @type {Builder.CrNode}
-         */
         CrNode = require('./builder').CrNode,
         util = require('util'),
         events = require('events'),
@@ -214,20 +205,26 @@
 
             $this.parserPromises.push(deffered.promise);
 
-            $this.handler.addNode(new CrNode(id));
+            var crNode = new CrNode(id);
+            $this.handler.addNode(crNode);
 
             parser.on('error', function() {
                 deffered.reject(new Error('Parser ' + id + ' failed.'));
             });
 
             parser.on('include', function(include) {
-                $this.handler.addRelation(id, include);
-
                 if(!$this.handler.hasNode(include.name)) {
                     var fileName = $this.getFilePathFromName(include.name);
-                    $this.startParser(include.name, new Parser(fileName));
+                    crNode.templateFile = fileName;
+                    var promise = $this.startParser(include.name, new Parser(fileName));
 
                     $this.waitForFinish();
+
+                    promise.then(function(includedNode) {
+                        if(!includedNode.info.hasOwnProperty('isOwnElement') || includedNode.info.isOwnElement !== false) {
+                            $this.handler.addRelation(id, include);
+                        }
+                    })
                 }
             });
 
@@ -235,11 +232,23 @@
                 $this.handler.addField(id, field);
             });
 
+            parser.on('nodeinfo', function(info) {
+                var crNode = $this.handler.getNodeById(id);
+                crNode.info = info;
+            });
+
             parser.on('end', function() {
-                deffered.resolve();
+                var crNode = $this.handler.getNodeById(id);
+
+                if(crNode.info == null) {
+                    crNode.info = {};
+                }
+
+                deffered.resolve(crNode);
             });
 
             parser.parse();
+            return deffered.promise;
         };
 
         /**
@@ -330,7 +339,7 @@
                     }
 
                     var innerDeferred = Q.defer();
-                    qList.push(innerDeferred);
+                    qList.push(innerDeferred.promise);
 
                     // add file or descent
                     var newPath = path.join(base, filename);
@@ -342,6 +351,7 @@
                                     $this[structureType][idName] = newPath;
                                 }
                             }
+                            innerDeferred.resolve();
                         } else if(stats.isDirectory()) {
                             $this.recursiveBuildStructureMapping(structureType, newPath).then(function() {
                                 innerDeferred.resolve();
@@ -352,11 +362,8 @@
                     });
                 });
 
-                var promises = Q.all(qList);
-                Q.allSettled(promises).then(function() {
+                Q.allSettled(qList).then(function() {
                     deferred.resolve();
-                }, function(err) {
-                    deferred.reject(err);
                 });
             });
 
@@ -409,8 +416,7 @@
         inits.push($this.recursiveBuildStructureMapping('molecules', path.join($this.options.patternDir, '01-molecules')));
 
         // start initial parsers
-        var promises = Q.all(inits);
-        Q.allSettled(promises).then(function() {
+        Q.allSettled(inits).then(function() {
             // process start point(s)
             if($this.options.startDir &amp;&amp; $this.options.startDir.length > 0) {
                 fs.readdir($this.options.startDir, function(err, files) {
@@ -435,8 +441,6 @@
             } else {
                 $this.emit('error', new Error('Neither startFile nor startDir given.'));
             }
-        }, function(err) {
-            $this.emit('error', err);
         });
     };
 
@@ -454,13 +458,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Builder.BuilderModule.html">BuilderModule</a></li><li><a href="Builder.CrNode.html">CrNode</a></li><li><a href="Builder.NodeStorage.html">NodeStorage</a></li><li><a href="BuilderModules.PhpDataobjectScaffolding.BuilderModules.PhpDataobjectScaffolding.html">PhpDataobjectScaffolding</a></li><li><a href="Conductor.Conductor.html">Conductor</a></li><li><a href="Parser.Field.html">Field</a></li><li><a href="Parser.Include.html">Include</a></li><li><a href="Parser.InfoBlock.html">InfoBlock</a></li><li><a href="Parser.Parser.html">Parser</a></li></ul><h3>Namespaces</h3><ul><li><a href="Builder.html">Builder</a></li><li><a href="BuilderModules.PhpDataobjectScaffolding.html">PhpDataobjectScaffolding</a></li><li><a href="Conductor.html">Conductor</a></li><li><a href="Conductor.defaultOptions.html">defaultOptions</a></li><li><a href="Parser.html">Parser</a></li><li><a href="Parser.parserFieldDefaultOptions.html">parserFieldDefaultOptions</a></li><li><a href="Parser.parserInfoDefaultOptions.html">parserInfoDefaultOptions</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Builder.CrNode.html">CrNode</a></li><li><a href="Builder.NodeStorage.html">NodeStorage</a></li><li><a href="Conductor.Conductor.html">Conductor</a></li><li><a href="Parser.Field.html">Field</a></li><li><a href="Parser.Include.html">Include</a></li><li><a href="Parser.Parser.html">Parser</a></li><li><a href="Writer.Writer.html">Writer</a></li></ul><h3>Namespaces</h3><ul><li><a href="Builder.html">Builder</a></li><li><a href="Conductor.html">Conductor</a></li><li><a href="Conductor.defaultOptions.html">defaultOptions</a></li><li><a href="Parser.html">Parser</a></li><li><a href="Parser.parserFieldDefaultOptions.html">parserFieldDefaultOptions</a></li><li><a href="Writer.html">Writer</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha10</a> on Sat Nov 01 2014 23:36:48 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha10</a> on Wed Nov 05 2014 23:01:05 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -39,57 +39,6 @@
         Q = require('q');
 
     /**
-     * Abstract class for a handler module.
-     * NodeStorage modules process the storage. A module can for example scaffold CR class stubs.
-     *
-     * @memberOf Builder
-     * @namespace Builder.BuilderModule
-     * @constructor
-     */
-    function BuilderModule() {}
-
-    /**
-     * Process the {@link Builder.NodeStorage node storage}.
-     *
-     * @function process
-     * @memberOf Builder.BuilderModule
-     *
-     * @param {Object.&lt;string, Builder.CrNode>} storage
-     * @param {function} fn callback function
-     */
-    BuilderModule.prototype.process = function(storage, fn) {
-        var qAll = [];
-        for(var prop in storage) {
-            if(storage.hasOwnProperty(prop)) {
-                var node = storage[prop];
-                qAll.push(this.createNode(node, fn));
-            }
-        }
-
-        var promise = Q.all(qAll);
-        Q.allSettled(promise).then(function(outputs) {
-            fn(null, outputs);
-        }, function(err) {
-            fn(err);
-        });
-    };
-
-    /**
-     * Create a node.
-     *
-     * @function createNode
-     * @memberOf Builder.BuilderModule
-     * @abstract
-     *
-     * @param {Builder.CrNode} crNode node to create
-     *
-     * @returns {Q.Promise}
-     */
-    BuilderModule.prototype.createNode = function(crNode) {
-        throw new Error('createNode not implemented.');
-    };
-
-    /**
      * Represents a node
      *
      * @memberOf Builder
@@ -110,12 +59,20 @@
         this.id = id;
 
         /**
+         * @name templateFile
+         * @memberOf Builder.CrNode
+         *
+         * @type {string}
+         */
+        this.templateFile = null;
+
+        /**
          * @name fields
          * @memberOf Builder.CrNode
          *
-         * @type {Object.&lt;string, Parser.Field>}
+         * @type {Parser.Field[]}
          */
-        this.fields = {};
+        this.fields = [];
 
         /**
          * @name relations
@@ -124,6 +81,16 @@
          * @type {Parser.Include[]}
          */
         this.relations = [];
+
+        /**
+         * Additional information for this node
+         *
+         * @name info
+         * @memberOf Builder.CrNode
+         *
+         * @type {Parser.InfoBlock}
+         */
+        this.info = null;
     }
 
     /**
@@ -142,11 +109,7 @@
             throw new TypeError('Fields must be instances of Field.');
         }
 
-        if(this.fields.hasOwnProperty(field.name)) {
-            throw new Error('Field with the same name is already attached.');
-        }
-
-        this.fields[field.name] = field;
+        this.fields.push(field);
     };
 
     /**
@@ -274,8 +237,7 @@
     // Propagate NodeStorage and CrNode class
     module.exports = {
         NodeStorage     : NodeStorage,
-        CrNode          : CrNode,
-        BuilderModule   : BuilderModule
+        CrNode          : CrNode
     };
 })(module);</code></pre>
         </article>
@@ -287,13 +249,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Builder.BuilderModule.html">BuilderModule</a></li><li><a href="Builder.CrNode.html">CrNode</a></li><li><a href="Builder.NodeStorage.html">NodeStorage</a></li><li><a href="BuilderModules.PhpDataobjectScaffolding.BuilderModules.PhpDataobjectScaffolding.html">PhpDataobjectScaffolding</a></li><li><a href="Conductor.Conductor.html">Conductor</a></li><li><a href="Parser.Field.html">Field</a></li><li><a href="Parser.Include.html">Include</a></li><li><a href="Parser.InfoBlock.html">InfoBlock</a></li><li><a href="Parser.Parser.html">Parser</a></li></ul><h3>Namespaces</h3><ul><li><a href="Builder.html">Builder</a></li><li><a href="BuilderModules.PhpDataobjectScaffolding.html">PhpDataobjectScaffolding</a></li><li><a href="Conductor.html">Conductor</a></li><li><a href="Conductor.defaultOptions.html">defaultOptions</a></li><li><a href="Parser.html">Parser</a></li><li><a href="Parser.parserFieldDefaultOptions.html">parserFieldDefaultOptions</a></li><li><a href="Parser.parserInfoDefaultOptions.html">parserInfoDefaultOptions</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Builder.CrNode.html">CrNode</a></li><li><a href="Builder.NodeStorage.html">NodeStorage</a></li><li><a href="Conductor.Conductor.html">Conductor</a></li><li><a href="Parser.Field.html">Field</a></li><li><a href="Parser.Include.html">Include</a></li><li><a href="Parser.Parser.html">Parser</a></li><li><a href="Writer.Writer.html">Writer</a></li></ul><h3>Namespaces</h3><ul><li><a href="Builder.html">Builder</a></li><li><a href="Conductor.html">Conductor</a></li><li><a href="Conductor.defaultOptions.html">defaultOptions</a></li><li><a href="Parser.html">Parser</a></li><li><a href="Parser.parserFieldDefaultOptions.html">parserFieldDefaultOptions</a></li><li><a href="Writer.html">Writer</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha10</a> on Sat Nov 01 2014 23:36:48 GMT+0100 (CET)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha10</a> on Wed Nov 05 2014 23:01:05 GMT+0100 (CET)
 </footer>
 
 <script> prettyPrint(); </script>
