@@ -1,7 +1,7 @@
-Patternlab2Cr
+patternlab2domain
 ============
 
-Create a content repository structure from a patternlab project.
+Create a JSON domain model from a patternlab project.
 
 Usage
 -----
@@ -12,18 +12,26 @@ node main.js --tplBaseDir="path/to/source/_patterns/04-pages" --patternDir="path
 
 ### Custom parsing mechanisms
 
-#### Name includes
+#### Adding meta information
 
-In the context of a domain model you often need to name includes.
+In the context of a domain model you often need to add meta information.
 This is even mandatory if you include something multiple times in the same template.
-In the example below we name the import of the organism-header as 'header'.
+The example below shows a named include and some added meta data for a variable.
 
 ```
-<div class="page" id="page">
-  {{! cr:import header }}
+  {{! cr:element {"name":"header"} }}
 	{{> organisms-header }}
-	<div role="main">
+  {{! cr:element {"neos":{"inlineEditable":true} } }}
+  {{ newvar }}
 ```
+
+All the meta data must be provided as a JSON string inside a mustache comment with the format:
+
+```
+{{! cr:element <JSON> }}
+```
+
+Note that you must separate double object braces in the JSON content by a space so the mustache template is still valid.
 
 #### Additional node information
 
